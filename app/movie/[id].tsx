@@ -4,7 +4,7 @@ import useFetch from "@/hooks/useFetch";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
-import { getSavedMovies, saveMovie, unsaveMovie } from "@/services/movieService";
+import { saveMovie, unsaveMovie } from "@/services/movieService";
 import { useAuth } from "@/hooks/useAuth";
 
 interface MovieInfoProps {
