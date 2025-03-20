@@ -16,11 +16,21 @@ interface Movie {
 }
 
 interface TrendingMovie {
+  id:string,
   searchTerm: string;
   movie_id: number;
   title: string;
   count: number;
   poster_url: string;
+}
+
+interface MoviesSaved {
+  id: string ;
+  title: string;
+  poster_path: string;
+  vote_average: number;
+  release_date: string;
+  addedAt: Timestamp;
 }
 
 interface MovieDetails {

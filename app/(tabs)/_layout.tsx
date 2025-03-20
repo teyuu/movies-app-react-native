@@ -1,9 +1,11 @@
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { Tabs } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
+import { Redirect, Tabs } from "expo-router";
 import { View, Text, ImageBackground, Image } from "react-native";
 
 function TabIcon({ focused, icon, title }: any) {
+
   if (focused) {
     return (
       <ImageBackground
@@ -26,6 +28,12 @@ function TabIcon({ focused, icon, title }: any) {
 }
 
 const TabsLayout = () => {
+  const { user} = useAuth()
+
+  if (!user) {
+    return <Redirect href="/auth" />;
+  }
+  
   return (
     <Tabs
     screenOptions={{

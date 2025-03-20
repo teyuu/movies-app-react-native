@@ -1,24 +1,40 @@
-import MovieCard from "@/components/MovieCard";
-import SearchBar from "@/components/SearchBar";
-import { icons } from "@/constants/icons";
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+
 import { images } from "@/constants/images";
+import { icons } from "@/constants/icons";
+
 import { fetchMovies } from "@/services/api";
-import useFetch from "@/services/useFetch";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
+
+import SearchBar from "@/components/SearchBar";
+import MovieDisplayCard from "@/components/MovieCard";
+import useFetch from "@/hooks/useFetch";
+import { getTrendingMovies, updateSearchCount } from "@/services/movieService";
+import { useAuth } from "@/hooks/useAuth";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const {user} = useAuth()
+
   const {
-    data: movies,
+    data: movies = [],
     loading,
     error,
-    reset,
     refetch: loadMovies,
+    reset,
   } = useFetch(() => fetchMovies({ query: searchQuery }), false);
 
-  // Debounced search effect
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+  };
+
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       if (searchQuery.trim()) {
@@ -31,6 +47,13 @@ const Search = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (searchQuery.trim() && movies && movies.length > 0) {
+      const firstMovie = movies[0];
+      updateSearchCount(searchQuery.toLowerCase().trim(), firstMovie, user);
+    }
+  }, [movies]);
+
   return (
     <View className="flex-1 bg-primary">
       <Image
@@ -38,29 +61,30 @@ const Search = () => {
         className="flex-1 absolute w-full z-0"
         resizeMode="cover"
       />
+
       <FlatList
-        data={movies}
-        renderItem={({ item }) => <MovieCard {...item} />}
-        keyExtractor={(item) => item.id.toString()}
         className="px-5"
+        data={movies as Movie[]}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => <MovieDisplayCard {...item} />}
         numColumns={3}
         columnWrapperStyle={{
-          justifyContent: "center",
+          justifyContent: "flex-start",
           gap: 16,
           marginVertical: 16,
         }}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
           <>
-            <View className="w-full flew-row justify-center mt-20 items-center">
+            <View className="w-full flex-row justify-center mt-20 items-center">
               <Image source={icons.logo} className="w-12 h-10" />
             </View>
 
             <View className="my-5">
               <SearchBar
-                placeholder="Search movies..."
+                placeholder="Search for a movie"
                 value={searchQuery}
-                onChangeText={(text: string) => setSearchQuery(text)}
+                onChangeText={handleSearch}
               />
             </View>
 
@@ -77,6 +101,7 @@ const Search = () => {
                 Error: {error.message}
               </Text>
             )}
+
             {!loading &&
               !error &&
               searchQuery.trim() &&
@@ -92,13 +117,16 @@ const Search = () => {
           !loading && !error ? (
             <View className="mt-10 px-5">
               <Text className="text-center text-gray-500">
-                {searchQuery.trim() ? 'No movies found' : 'Search for a movie'}
+                {searchQuery.trim()
+                  ? "No movies found"
+                  : "Start typing to search for movies"}
               </Text>
             </View>
-          ) :null
+          ) : null
         }
       />
     </View>
   );
 };
+
 export default Search;
